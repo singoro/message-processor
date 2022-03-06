@@ -24,52 +24,62 @@ namespace MessageProcessor.Controllers
         [HttpPost]
         public async Task<ApiCallResult> ReceiveMessageAsync([FromBody] DataLoad load)
         {
-            ApiCallResult result = new ApiCallResult()
-            {
-                Success = false,
-                Error_message = "",
-                Return_code = 0
-            };
-
-              result = await StoreLogs(load.email);
+            ApiCallResult result = new ApiCallResult();
+          
+            result = await SendToLogs(load);
 
             return result;
-
         }
 
-        private async Task<ApiCallResult> StoreLogs(String email)
+        private async Task<ApiCallResult> SendToLogs(DataLoad load)
         {
-            ApiCallResult result = new ApiCallResult()
-            {
-                Success = false,
-                Error_message = "",
-                Return_code = 0
-            };
-
+            ApiCallResult returnResult = new ApiCallResult();
+           
             try
             {
-                        
-                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
-                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-                CloudBlobContainer container = blobClient.GetContainerReference("files");
 
-                string fileName = email + "-" + DateTime.Now.ToShortDateString();
-                var blob = container.GetAppendBlobReference(fileName);
-                blob.Properties.ContentType = "text/csv";
-                
-                await blob.UploadTextAsync(email);
+                string containerName = "files";
+                string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + load.email + ".log"; //added date string to ensure that everyday a new file is created for every email that comes in
+                var storageAccount = CloudStorageAccount.Parse(connectionString);
+                var blobClient = storageAccount.CreateCloudBlobClient();
+                await WriteToAzureContainerLog(containerName, logFileName, blobClient, load.Key);
 
-                result.Success = true;
+                returnResult.Success = true;
                 
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.Error_message = ex.Message;
-                _logger.LogError(ex, "Error occured while attempting to save to blob");
+                returnResult.Error_message = ex.Message;
+                _logger.LogError(ex, ":Error occured while attempting to send to logs");
             }
 
-            return result;
+            return returnResult;
+        }
+
+
+        private async Task<ApiCallResult> WriteToAzureContainerLog(string containerName, string logFileName, CloudBlobClient objBlobClient, string newDataValue)
+        {
+            ApiCallResult returnResult = new ApiCallResult();
+            try
+            {
+                var container = objBlobClient.GetContainerReference(containerName.ToString());
+                var blob = container.GetAppendBlobReference(logFileName);
+                bool isPresent = await blob.ExistsAsync();
+
+                if (!isPresent)
+                {
+                    await blob.CreateOrReplaceAsync();
+                }
+
+                await blob.AppendTextAsync($"{newDataValue} \n");
+            }
+            catch (Exception ex)
+            {
+                returnResult.Error_message = ex.Message;
+                _logger.LogError(ex, " An Error occured while attempting to save to blob");
+            }
+
+            return returnResult;
         }
 
     }
