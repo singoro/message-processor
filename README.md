@@ -5,4 +5,4 @@
 This project is a simple-sample solution for processing/consuming a message from rest API.
 ## Technologies
 Project is created with:
-*C# .NET 5.0
+* C# .NET 5.0
