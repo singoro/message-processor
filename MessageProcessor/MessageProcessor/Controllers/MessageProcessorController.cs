@@ -42,7 +42,7 @@ namespace MessageProcessor.Controllers
                 string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + load.email + ".log"; //added date string to ensure that everyday a new file is created for every email that comes in
                 var storageAccount = CloudStorageAccount.Parse(connectionString);
                 var blobClient = storageAccount.CreateCloudBlobClient();
-                await WriteToAzureContainerLog(containerName, logFileName, blobClient, load.Key);
+                await WriteLogToAzureContainer(containerName, logFileName, blobClient, load.Key);
 
                 returnResult.Success = true;
                 
@@ -57,7 +57,7 @@ namespace MessageProcessor.Controllers
         }
 
 
-        private async Task<ApiCallResult> WriteToAzureContainerLog(string containerName, string logFileName, CloudBlobClient objBlobClient, string newDataValue)
+        private async Task<ApiCallResult> WriteLogToAzureContainer(string containerName, string logFileName, CloudBlobClient objBlobClient, string newDataValue)
         {
             ApiCallResult returnResult = new ApiCallResult();
             try
