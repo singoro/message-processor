@@ -6,6 +6,6 @@ namespace MessageProcessor.Models
     {
         public Boolean Success { get; set; } = false;
         public string Error_message { get; set; } = string.Empty;
-      
+
     }
 }

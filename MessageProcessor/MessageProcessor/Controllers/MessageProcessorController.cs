@@ -17,7 +17,7 @@ namespace MessageProcessor.Controllers
     {
         private readonly ILogger<MessageProcessorController> _logger;
         private readonly IConfiguration _configuration;
-        private string _connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+        private  readonly string _connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 
         public MessageProcessorController(ILogger<MessageProcessorController> logger, IConfiguration configuration)
         {
@@ -27,30 +27,39 @@ namespace MessageProcessor.Controllers
         [HttpPost]
         public async Task<ApiCallResult> ReceiveMessageAsync([FromBody] DataLoad load)
         {
-            ApiCallResult result = new ApiCallResult();
-            string queueName = _configuration["AzureSettings:QueueName"].ToString();
+            ApiCallResult apiResultFromSendingLogs;
+            ApiCallResult apiResultFromSendingToQueue;
+          
             var loadJson = new JavaScriptSerializer().Serialize(load);
 
-            result = await SendToLogs(load);
-            await SendMessageToQueue(queueName, loadJson);
-            return result;
+            apiResultFromSendingLogs = await SendToLogs(load);
+            apiResultFromSendingToQueue = await SendMessageToQueue(loadJson);
+
+            if(apiResultFromSendingLogs.Success && apiResultFromSendingToQueue.Success)
+            {
+                return apiResultFromSendingLogs;
+            }
+            else if( !apiResultFromSendingLogs.Success)
+            {
+                return apiResultFromSendingLogs;
+            }
+            else
+            {
+                return apiResultFromSendingToQueue;
+            }
         }
 
         private async Task<ApiCallResult> SendToLogs(DataLoad load)
         {
-            ApiCallResult returnResult = new ApiCallResult();
-           
+            ApiCallResult returnResult = new();
+
             try
             {
-
                 string containerName = _configuration["AzureSettings:ContainerName"].ToString();
-                string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + load.email + ".log"; // today's date string precedes the file and this ensures that everyday a new file is created for every email that comes in
+                string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + load.Email + ".log"; // today's date string precedes the file and this ensures that everyday a new file is created for every email that comes in
                 var storageAccount = CloudStorageAccount.Parse(_connectionString);
                 var blobClient = storageAccount.CreateCloudBlobClient();
                 returnResult = await WriteLogToAzureContainer(containerName, logFileName, blobClient, load.Key);
-             
-               
-                
             }
             catch (Exception ex)
             {
@@ -63,7 +72,7 @@ namespace MessageProcessor.Controllers
 
         private async Task<ApiCallResult> WriteLogToAzureContainer(string containerName, string logFileName, CloudBlobClient objBlobClient, string newDataValue)
         {
-            ApiCallResult returnResult = new ApiCallResult();
+            ApiCallResult returnResult = new();
             try
             {
                 var container = objBlobClient.GetContainerReference(containerName.ToString());
@@ -76,6 +85,7 @@ namespace MessageProcessor.Controllers
                 }
 
                 await blob.AppendTextAsync($"{newDataValue} \n");
+                returnResult.Success = true;
             }
             catch (Exception ex)
             {
@@ -86,18 +96,20 @@ namespace MessageProcessor.Controllers
             return returnResult;
         }
 
-        private async Task<ApiCallResult> SendMessageToQueue(string queueName, string message)
+        private async Task<ApiCallResult> SendMessageToQueue(string message)
         {
-            ApiCallResult returnResult = new ApiCallResult();
+            string queueName = _configuration["AzureSettings:QueueName"].ToString();
+
+            ApiCallResult returnResult = new();
             try
             {
-
-                QueueClient queueClient = new QueueClient(_connectionString, queueName);
+                QueueClient queueClient = new(_connectionString, queueName);
                 queueClient.CreateIfNotExists();
 
                 if (queueClient.Exists())
                 {
                     await queueClient.SendMessageAsync(message);
+                    returnResult.Success = true;
                 }
             }
             catch (Exception ex)
@@ -109,5 +121,5 @@ namespace MessageProcessor.Controllers
             return returnResult;
         }
 
-        }
+    }
 }
