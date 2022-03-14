@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageProcessor", "Message
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueMonitor", "QueueMonitor\QueueMonitor.csproj", "{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Databases", "Databases\Databases.csproj", "{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Storage", "Databases\Storage.csproj", "{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
