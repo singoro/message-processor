@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Databases;
 using MessageProcessor;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace QueueMonitor
 {
@@ -14,7 +17,7 @@ namespace QueueMonitor
         static string _mySqlconnectionString = Environment.GetEnvironmentVariable("MySqlConnectionString");
         static DatabaseMethods _databaseMethods = new DatabaseMethods(_mySqlconnectionString);
         [Function("DequeueingFunction")]
-        public static void Run([QueueTrigger("jsons-queue", Connection = "")] string myQueueItem,
+        public static async void Run([QueueTrigger("jsons-queue", Connection = "")] string myQueueItem,
             FunctionContext context)
         {
             var logger = context.GetLogger("DequeueingFunction");
@@ -34,14 +37,14 @@ namespace QueueMonitor
 
                     if(attributes.Count>9)
                     {
-                        HandleSendingAndSavingOfEmail(emailAddressDbID,attributes);
+                        await HandleSendingAndSavingOfEmail(emailAddressDbID,attributes);
                        
                     }
                 }
             }  
         }
     
-        private static Boolean  HandleSendingAndSavingOfEmail(int emailId, List<string> attributes)
+        private static async Task<Boolean> HandleSendingAndSavingOfEmail(int emailId, List<string> attributes)
         {
             Boolean returnResult = false;
 
@@ -53,12 +56,44 @@ namespace QueueMonitor
             stringBuilder.Append("Best regards, Millisecond");
 
             _databaseMethods.SaveEmailSentToDatabase(emailId, stringBuilder.ToString());
-
+            await WriteLogToAzureContainer( stringBuilder.ToString() + "[" + emailId + "]");
             returnResult = true;
 
 
 
             return returnResult;
         }
+
+        private static async Task<Boolean> WriteLogToAzureContainer(  string newDataValue)
+        {
+            Boolean returnResult = false;
+            string containerName = Environment.GetEnvironmentVariable("AzureSettings:ContainerName".ToString());
+            string logFileName = "sentemails.log"; 
+            var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("ContainerName"));
+            var blobClient = storageAccount.CreateCloudBlobClient();
+            try
+            {
+                var container = blobClient.GetContainerReference(containerName.ToString());
+                var blob = container.GetAppendBlobReference(logFileName);
+                bool isPresent = await blob.ExistsAsync();
+
+                if (!isPresent)
+                {
+                    await blob.CreateOrReplaceAsync();
+                }
+
+                await blob.AppendTextAsync($"{newDataValue} \n");
+                returnResult = true;
+            }
+            catch (Exception ex)
+            {
+                returnResult = false;
+                Console.WriteLine(ex.Message);
+
+            }
+
+            return returnResult;
+        }
+
     }
 }
