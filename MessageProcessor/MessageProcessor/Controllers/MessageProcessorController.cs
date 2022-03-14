@@ -25,14 +25,14 @@ namespace MessageProcessor.Controllers
             _configuration = configuration;
         }
         [HttpPost]
-        public async Task<ApiCallResult> ReceiveMessageAsync([FromBody] DataLoad load)
+        public async Task<ApiCallResult> ReceiveMessageAsync([FromBody] DataLoad dataLoad)
         {
             ApiCallResult apiResultFromSendingLogs;
             ApiCallResult apiResultFromSendingToQueue;
           
-            var loadJson = new JavaScriptSerializer().Serialize(load);
+            var loadJson = new JavaScriptSerializer().Serialize(dataLoad);
 
-            apiResultFromSendingLogs = await SendToLogs(load);
+            apiResultFromSendingLogs = await SendToLogs(dataLoad);
             apiResultFromSendingToQueue = await SendMessageToQueue(loadJson);
 
             if(apiResultFromSendingLogs.Success && apiResultFromSendingToQueue.Success)
@@ -49,17 +49,18 @@ namespace MessageProcessor.Controllers
             }
         }
 
-        private async Task<ApiCallResult> SendToLogs(DataLoad load)
+        private async Task<ApiCallResult> SendToLogs(DataLoad dataLoad)
         {
             ApiCallResult returnResult = new();
 
             try
             {
                 string containerName = _configuration["AzureSettings:ContainerName"].ToString();
-                string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + load.Email + ".log"; // today's date string precedes the file and this ensures that everyday a new file is created for every email that comes in
+                string logFileName = DateTime.Now.ToString("yyyyMMdd") + " - " + dataLoad.Email + ".log"; // today's date string precedes the file and this ensures that everyday a new file is created for every email that comes in
                 var storageAccount = CloudStorageAccount.Parse(_connectionString);
                 var blobClient = storageAccount.CreateCloudBlobClient();
-                returnResult = await WriteLogToAzureContainer(containerName, logFileName, blobClient, load.Key);
+                var loadJson = new JavaScriptSerializer().Serialize(dataLoad);
+                returnResult = await WriteLogToAzureContainer(containerName, logFileName, blobClient, loadJson);
             }
             catch (Exception ex)
             {

@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.31727.386
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageProcessor", "MessageProcessor\MessageProcessor.csproj", "{8849D3F6-5A7F-4CE6-9C41-666410A990F4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueMonitor", "QueueMonitor\QueueMonitor.csproj", "{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Databases", "Databases\Databases.csproj", "{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{8849D3F6-5A7F-4CE6-9C41-666410A990F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8849D3F6-5A7F-4CE6-9C41-666410A990F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8849D3F6-5A7F-4CE6-9C41-666410A990F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5DF59B-4ADE-4AD5-8404-AEB21B60FDE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49A2E13E-CA1A-43D6-86CB-53F5E6D22A2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
