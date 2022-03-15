@@ -17,7 +17,7 @@ namespace MessageProcessor.Controllers
     {
         private readonly ILogger<MessageProcessorController> _logger;
         private readonly IConfiguration _configuration;
-        private  readonly string _connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+        private readonly string _connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 
         public MessageProcessorController(ILogger<MessageProcessorController> logger, IConfiguration configuration)
         {
@@ -29,17 +29,17 @@ namespace MessageProcessor.Controllers
         {
             ApiCallResult apiResultFromSendingLogs;
             ApiCallResult apiResultFromSendingToQueue;
-          
+
             var loadJson = new JavaScriptSerializer().Serialize(dataLoad);
 
             apiResultFromSendingLogs = await SendToLogs(dataLoad);
             apiResultFromSendingToQueue = await SendMessageToQueue(loadJson);
 
-            if(apiResultFromSendingLogs.Success && apiResultFromSendingToQueue.Success)
+            if (apiResultFromSendingLogs.Success && apiResultFromSendingToQueue.Success)
             {
                 return apiResultFromSendingLogs;
             }
-            else if( !apiResultFromSendingLogs.Success)
+            else if (!apiResultFromSendingLogs.Success)
             {
                 return apiResultFromSendingLogs;
             }
